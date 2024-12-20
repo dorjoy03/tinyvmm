@@ -1,0 +1,11 @@
+tinyvmm is a very simple vmm to run a linux kernel bzImage and print the kernel
+logs to the terminal. Only supports x86.
+
+tinyvmm only implements bare minimum ttyS0 serial console support for redirecting
+the kernel logs to stdout. It uses linux kvm to run the bzImage in a virtual
+machine in an x86 machine.
+
+Some references I used:
+https://bellard.org/tinyemu/
+https://lwn.net/Articles/658511/
+https://gist.github.com/zserge/ae9098a75b2b83a1299d19b79b5fe488
