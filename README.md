@@ -1,7 +1,7 @@
 ## tinyvmm
 tinyvmm is a very tiny vmm for x86 linux to run a x86 linux kernel bzImage in a
 VM and print the kernel logs to the vmm process's stdout. It only emulates a
-minimal ttyS0 serial console to be able to redirect the kernel logs to stdout.
+ttyS0 serial console to be able to redirect the kernel logs to stdout.
 
 ## Usage
 `tinyvmm --kernel=kernel_path [--intird=initrd_path, --cmdline=kernel_cmdline]`
