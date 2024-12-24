@@ -19,21 +19,10 @@
 #include <linux/kvm_para.h>
 
 #include "linux_params.h"
+#include "tinyvmm.h"
+#include "ttyS0.h"
 
 /* KVM apis: https://docs.kernel.org/virt/kvm/api.html */
-
-struct vm_info {
-    char *kernel_path;
-    char *initrd_path;
-    char *cmdline;
-    int kvm_fd;
-    int vm_fd;
-    int vcpu_fd;
-    int kvm_run_size;
-    struct kvm_run *kvm_run;
-    uint8_t *ram_ptr;
-    size_t ram_size;
-};
 
 /*
  * Logs from tinyvmm itself should be prefixed by "tinyvmm: "
@@ -428,9 +417,6 @@ void load_kernel(struct vm_info *vm)
             offsetof(struct linux_params, commandline);
     }
 
-    // Seems like "echo 'text' > /dev/ttyS0" in init script doesn't work because
-    // the kernel doesn't make ttyS0 available in /dev. Figure out what to do to
-    // be able to get echo in init script to stdout.
     if (vm->initrd_path) {
         uint8_t *initrd_buf;
         size_t initrd_size = load_file(vm->initrd_path, &initrd_buf);
@@ -526,26 +512,12 @@ void kvm_set_regs(struct vm_info *vm, uint64_t gdt_base, uint16_t gdt_limit,
 }
 
 /*
- * Emulates minimal ttyS0 serial console
+ * Emulates ttyS0 serial console
  */
 void kvm_exit_io(struct vm_info *vm)
 {
-    if (vm->kvm_run->io.port == 0x3f8 &&
-        vm->kvm_run->io.direction == KVM_EXIT_IO_OUT) {
-        uint32_t size = vm->kvm_run->io.size * vm->kvm_run->io.count;
-        uint64_t offset = vm->kvm_run->io.data_offset;
-        fprintf(stdout, "%.*s", size, (char *) vm->kvm_run + offset);
-    } else if (vm->kvm_run->io.port == 0x3f8 + 5 &&
-               vm->kvm_run->io.direction == KVM_EXIT_IO_IN) {
-        /*
-         * Return Line Status Register (IO port offset 5 i.e., 0x3f8 + 5) value
-         * of ttyS0 to indicate transmission buffer is empty i.e., data can be
-         * sent (bit 5 is set to 1).
-         *
-         * ref: https://wiki.osdev.org/Serial_Ports
-         */
-        uint8_t *status = (uint8_t *)vm->kvm_run + vm->kvm_run->io.data_offset;
-        *status = 0x20;
+    if (is_ttyS0_io(vm->kvm_run->io.port)) {
+        emulate_ttyS0(vm);
     }
 }
 

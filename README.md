@@ -1,7 +1,8 @@
 ## tinyvmm
 tinyvmm is a very tiny vmm for x86 linux to run a x86 linux kernel bzImage in a
 VM and print the kernel logs to the vmm process's stdout. It only emulates a
-minimal ttyS0 serial console to be able to redirect the kernel logs to stdout.
+ttyS0 serial console (NS16450 UART) to be able to redirect the kernel logs to
+stdout.
 
 ## Usage
 `tinyvmm --kernel=kernel_path [--intird=initrd_path, --cmdline=kernel_cmdline]`
@@ -23,15 +24,13 @@ tty, serial drivers, initramfs support etc. You should be able to boot the
 /boot/vmlinuz-* in your own linux system with tinyvmm or any bzImage built from
 source with .config similar to the one provided.
 
-To be able to verify initrd is properly loaded, I included a simple kernel module
-that just does a printk (see demo), bundled it and insmod it from the init script
-of the initramfs (the kernel doesn't seem to make ttyS0 available at /dev so I
-couldn't verify using echo in the init script, something I need to look into).
+To be able to verify initrd is properly loaded, I included some 'echo' and 'ls'
+in the init script (see demo).
 
 ## Demo
 Here's a demo of tinyvmm running a bzImage with an initramfs:
 
-![tinyvmm_demo](https://github.com/user-attachments/assets/88a6ff04-0199-47ab-80c8-2522d9f4ae12)
+![tinyvmm_demo](https://github.com/user-attachments/assets/da8d9e61-23c1-4c17-ae93-ef24cc04f7fb)
 
 ## References
 Some references I used:
